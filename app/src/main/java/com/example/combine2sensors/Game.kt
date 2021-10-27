@@ -18,6 +18,7 @@ class Game : AppCompatActivity(), SensorEventListener {
     var sensorAcc: Sensor? = null
     lateinit var sm: SensorManager
     private var isRunning = true
+    private var windowIsActive = true
     private lateinit var showQuestionsThread: Thread
     lateinit var binding: ActivityGameBinding
     var list = arrayListOf<CharSequence>()
@@ -35,14 +36,9 @@ class Game : AppCompatActivity(), SensorEventListener {
             Toast.makeText(this, "Error", Toast.LENGTH_LONG).show()
         }
 
-
-    }
-
-    override fun onStart() {
-        super.onStart()
         showQuestionsThread = Thread {
             var index = 0
-            while (true) {
+            while (windowIsActive) {
                 if (isRunning) {
                     if (index >= list.size) index = 0
                     runOnUiThread {
@@ -54,8 +50,10 @@ class Game : AppCompatActivity(), SensorEventListener {
             }
 
         }
-        showQuestionsThread.start()
+
+
     }
+
         override fun onResume() {
             super.onResume()
             sensorP?.let {
@@ -64,6 +62,7 @@ class Game : AppCompatActivity(), SensorEventListener {
             sensorAcc?.let {
                 sm.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
             }
+            showQuestionsThread.start()
 
         }
 
@@ -80,7 +79,9 @@ class Game : AppCompatActivity(), SensorEventListener {
                 val z = event.values[2]
                 if (z < -9f) {
                     val i = Intent(this, MainActivity::class.java)
+                    windowIsActive = false
                     startActivity(i)
+                    finish()
                 }
             }
         }
